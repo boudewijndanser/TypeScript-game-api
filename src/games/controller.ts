@@ -1,18 +1,8 @@
 // src/games/controller.ts
 
 import Game from './entity'
-import { JsonController, Get, Param, Put, Body, NotFoundError,Post, HttpCode,BadRequestError} from 'routing-controllers'
-
-// Define color options and have fc assignRandomColor pick one.
-// chosenColor returns the random color.
-
-const colorOptions = ["red","blue","green","yellow","magenta"]
-const assignRandomColor = colorOptions  => {return colorOptions[Math.floor(Math.random() * colorOptions.length)];}
-//console.log(assignRandomColor(colorOptions));
-
-// Default board setup:
-const boardSetup = [['o','o','o'],['o','o','o'],['o','o','o']];
-const myJsonBoard = JSON.stringify(boardSetup)
+import { JsonController, Get, Param, Put, Body, NotFoundError,Post, HttpCode,BadRequestError, NotAcceptableError} from 'routing-controllers'
+const{ colorOptions, assignRandomColor, boardSetup, myJsonBoard } = require('./setupValues')
 
 @JsonController()
 export default class GameController {
@@ -23,16 +13,33 @@ export default class GameController {
         //console.log(games);
             return { games }
     }
+    @Get('/games/:id')
+    async getGame(
+    @Param('id') id: number
+    ) { 
+        const game = await Game.findOne(id)
+        console.log(`@Get/games -> Looking at game ${game.id}`);
+        return Game.findOne(id)
+    }
 
     @Post('/games')
         async newGame(
             
             @Body() game: Game
         ) {
-            console.log(`@post/games -> Setting up a game for: ${game.name}`)
+            console.log(`@post/games -> Setting up a game for ${game.name}`)
+            // check if other values are not being posted, only name is allowed
+            if(game.color) throw new NotAcceptableError('Posting color is not allowed here...')
+            if(game.board) throw new NotAcceptableError('Posting board is not allowed here...')
+            if(game.id) throw new NotAcceptableError('Posting id is not allowed here...')
+
+            //Apply setupValues here:
             game.color = assignRandomColor(colorOptions)
+            // Regarding step #6 in the homework assignment: Setting empty game.board here because there is no app / front-end way to start it now.
             game.board = myJsonBoard
+            
             return game.save()
+            //@HttpCode(201)
         }
     
     @Put('/games/:id')
@@ -43,8 +50,9 @@ export default class GameController {
 
         const game = await Game.findOne(id)
         if (!game) throw new NotFoundError('The game you are looking for is not here...')
+        
         console.log('---> color: ', game.color);
-        if (game.color != 'red') throw new NotFoundError('Please choose a valid color')
+        //if (game.color != 'red') throw new NotFoundError('Please choose a valid color')
         console.log('---> id: ', game.id);
         console.log('---> name:', game.name);
         console.log('---> color: ', game.color);

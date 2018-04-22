@@ -31,5 +31,8 @@
     "@typesCustom",
     "node_modules/@types"
   ],
-  "compileOnSave": true
+  "compileOnSave": true,
+  "errorHandler": {
+      "disableStackTrace": true
+    }
 }
