@@ -1,7 +1,7 @@
 // src/games/controller.ts
 
 import Game from './entity'
-import { JsonController, Get, Param, Put, Body, NotFoundError,Post, HttpCode,BadRequestError} from 'routing-controllers'
+import { JsonController, Get, Param, Put, Body, NotFoundError,Post, HttpCode,BadRequestError, NotAcceptableError} from 'routing-controllers'
 const{ colorOptions, assignRandomColor, boardSetup, myJsonBoard } = require('./setupValues')
 
 @JsonController()
@@ -28,10 +28,16 @@ export default class GameController {
             @Body() game: Game
         ) {
             console.log(`@post/games -> Setting up a game for ${game.name}`)
-            //if(game.color) throw new 
+            // check if other values are not being posted, only name is allowed
+            if(game.color) throw new NotAcceptableError('Posting color is not allowed here...')
+            if(game.board) throw new NotAcceptableError('Posting board is not allowed here...')
+            if(game.id) throw new NotAcceptableError('Posting id is not allowed here...')
 
+            //Apply setupValues here:
             game.color = assignRandomColor(colorOptions)
+            // Regarding step #6 in the homework assignment: Setting empty game.board here because there is no app / front-end way to start it now.
             game.board = myJsonBoard
+            
             return game.save()
             //@HttpCode(201)
         }

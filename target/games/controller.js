@@ -27,6 +27,12 @@ let GameController = class GameController {
     }
     async newGame(game) {
         console.log(`@post/games -> Setting up a game for ${game.name}`);
+        if (game.color)
+            throw new routing_controllers_1.NotAcceptableError('Posting color is not allowed here...');
+        if (game.board)
+            throw new routing_controllers_1.NotAcceptableError('Posting board is not allowed here...');
+        if (game.id)
+            throw new routing_controllers_1.NotAcceptableError('Posting id is not allowed here...');
         game.color = assignRandomColor(colorOptions);
         game.board = myJsonBoard;
         return game.save();
