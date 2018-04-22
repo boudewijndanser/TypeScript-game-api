@@ -22,12 +22,12 @@ __decorate([
     __metadata("design:type", String)
 ], Game.prototype, "name", void 0);
 __decorate([
-    typeorm_1.Column('text', { nullable: true }),
+    typeorm_1.Column('text', { nullable: false }),
     __metadata("design:type", String)
 ], Game.prototype, "color", void 0);
 __decorate([
-    typeorm_1.Column('text', { nullable: true }),
-    __metadata("design:type", Object)
+    typeorm_1.Column('json', { nullable: false }),
+    __metadata("design:type", Array)
 ], Game.prototype, "board", void 0);
 Game = __decorate([
     typeorm_1.Entity()
