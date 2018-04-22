@@ -12,40 +12,53 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const entity_1 = require("./entity");
 const routing_controllers_1 = require("routing-controllers");
-const { colorOptions, assignRandomColor, myJsonBoard } = require('./setupValues');
+const { colorOptions, assignRandomColor, boardSetup } = require('./setupValues');
+const movesMade_1 = require("./movesMade");
+const entity_1 = require("./entity");
 let GameController = class GameController {
-    async allGamess() {
+    async getAllGames() {
         const games = await entity_1.default.find();
+        console.log('');
+        console.log('---> @Get/games:');
+        console.log('-> @Get/games: ', games);
         return { games };
     }
-    async getGame(id) {
-        const game = await entity_1.default.findOne(id);
-        console.log(`@Get/games -> Looking at game ${game.id}`);
-        return entity_1.default.findOne(id);
-    }
-    async newGame(game) {
-        console.log(`@post/games -> Setting up a game for ${game.name}`);
-        if (game.color)
+    setupGame(body) {
+        if (body.color)
             throw new routing_controllers_1.NotAcceptableError('Posting color is not allowed here...');
-        if (game.board)
+        if (body.board)
             throw new routing_controllers_1.NotAcceptableError('Posting board is not allowed here...');
-        if (game.id)
+        if (body.id)
             throw new routing_controllers_1.NotAcceptableError('Posting id is not allowed here...');
+        const game = new entity_1.default();
+        game.name = body.name;
         game.color = assignRandomColor(colorOptions);
-        game.board = myJsonBoard;
+        game.board = boardSetup;
+        console.log('');
+        console.log('---> @Post/games:');
+        console.log('-> game: ', game);
         return game.save();
     }
     async updateGame(id, update) {
         const game = await entity_1.default.findOne(id);
         if (!game)
-            throw new routing_controllers_1.NotFoundError('The game you are looking for is not here...');
-        console.log('---> color: ', game.color);
-        console.log('---> id: ', game.id);
-        console.log('---> name:', game.name);
-        console.log('---> color: ', game.color);
-        console.log('---> board: ', game.board);
+            throw new routing_controllers_1.NotFoundError('This is not the game you are looking for...');
+        console.log('');
+        console.log('---> @Put/games:');
+        console.log('-> game: ', game);
+        if (!update.name)
+            throw new routing_controllers_1.NotFoundError('Please enter a name.');
+        if (!update.color)
+            throw new routing_controllers_1.NotFoundError('Choose a color');
+        if (!update.board)
+            throw new routing_controllers_1.NotFoundError('Enter a move on the board');
+        if (colorOptions.indexOf(update.color) < 0)
+            throw new routing_controllers_1.BadRequestError('Not a valid color.');
+        if (movesMade_1.movesMade(game.board, update.board) < 9)
+            throw new routing_controllers_1.BadRequestError('Too many moves...');
+        console.log('-> movesMade: ', movesMade_1.movesMade(game.board, update.board) - 9);
+        console.log('---> @Put/games: Saving in DB');
         return entity_1.default.merge(game, update).save();
     }
 };
@@ -54,25 +67,18 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
-], GameController.prototype, "allGamess", null);
-__decorate([
-    routing_controllers_1.Get('/games/:id'),
-    __param(0, routing_controllers_1.Param('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number]),
-    __metadata("design:returntype", Promise)
-], GameController.prototype, "getGame", null);
+], GameController.prototype, "getAllGames", null);
 __decorate([
     routing_controllers_1.Post('/games'),
+    routing_controllers_1.HttpCode(201),
     __param(0, routing_controllers_1.Body()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [entity_1.default]),
-    __metadata("design:returntype", Promise)
-], GameController.prototype, "newGame", null);
+    __metadata("design:returntype", void 0)
+], GameController.prototype, "setupGame", null);
 __decorate([
     routing_controllers_1.Put('/games/:id'),
-    __param(0, routing_controllers_1.Param('id')),
-    __param(1, routing_controllers_1.Body()),
+    __param(0, routing_controllers_1.Param('id')), __param(1, routing_controllers_1.Body()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Number, Object]),
     __metadata("design:returntype", Promise)

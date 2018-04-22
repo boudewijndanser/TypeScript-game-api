@@ -2,6 +2,7 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm'
 import { BaseEntity } from 'typeorm/repository/BaseEntity'
 
+// Set entity / types / nullable
 @Entity()
 export default class Game extends BaseEntity {
 
@@ -11,9 +12,9 @@ export default class Game extends BaseEntity {
   @Column('text', {nullable:false})
   name: string
 
-  @Column('text', {nullable:true})
+  @Column('text', {nullable:false})
   color: string
 
-  @Column('text', {nullable:true})
-  board: JSON
+  @Column('json', {nullable:false})
+  board: string[][]
 }
