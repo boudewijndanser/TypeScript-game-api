@@ -14,17 +14,25 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const entity_1 = require("./entity");
 const routing_controllers_1 = require("routing-controllers");
-const colorOptions = ["red", "blue", "green", "yellow", "magenta"];
-const assignRandomColor = colorOptions => { return colorOptions[Math.floor(Math.random() * colorOptions.length)]; };
-const boardSetup = [['o', 'o', 'o'], ['o', 'o', 'o'], ['o', 'o', 'o']];
-const myJsonBoard = JSON.stringify(boardSetup);
+const { colorOptions, assignRandomColor, myJsonBoard } = require('./setupValues');
 let GameController = class GameController {
     async allGamess() {
         const games = await entity_1.default.find();
         return { games };
     }
+    async getGame(id) {
+        const game = await entity_1.default.findOne(id);
+        console.log(`@Get/games -> Looking at game ${game.id}`);
+        return entity_1.default.findOne(id);
+    }
     async newGame(game) {
-        console.log(`@post/games -> Setting up a game for: ${game.name}`);
+        console.log(`@post/games -> Setting up a game for ${game.name}`);
+        if (game.color)
+            throw new routing_controllers_1.NotAcceptableError('Posting color is not allowed here...');
+        if (game.board)
+            throw new routing_controllers_1.NotAcceptableError('Posting board is not allowed here...');
+        if (game.id)
+            throw new routing_controllers_1.NotAcceptableError('Posting id is not allowed here...');
         game.color = assignRandomColor(colorOptions);
         game.board = myJsonBoard;
         return game.save();
@@ -34,8 +42,6 @@ let GameController = class GameController {
         if (!game)
             throw new routing_controllers_1.NotFoundError('The game you are looking for is not here...');
         console.log('---> color: ', game.color);
-        if (game.color != 'red')
-            throw new routing_controllers_1.NotFoundError('Please choose a valid color');
         console.log('---> id: ', game.id);
         console.log('---> name:', game.name);
         console.log('---> color: ', game.color);
@@ -49,6 +55,13 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], GameController.prototype, "allGamess", null);
+__decorate([
+    routing_controllers_1.Get('/games/:id'),
+    __param(0, routing_controllers_1.Param('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", Promise)
+], GameController.prototype, "getGame", null);
 __decorate([
     routing_controllers_1.Post('/games'),
     __param(0, routing_controllers_1.Body()),
